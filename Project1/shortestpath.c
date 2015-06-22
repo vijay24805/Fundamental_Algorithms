@@ -31,7 +31,7 @@ int screen_num;
 char *display_name = NULL;
 unsigned int display_width, display_height;
 //used to store the current vertex
-double qx, qy;		
+int qx, qy;		
 //used to check the orientation.
 double or1,or2,or3,or4;
 //New start points
@@ -41,14 +41,14 @@ int ed;
 //store the extended line vertex values.
 double xx ,yy;
 // to check the orientation value
-double  xr1,xr2,xr3,xr4;
+long xr1,xr2,xr3,xr4;
 // The intersection points
 double px,py;
 // Used while solving two linear equations.
 double sa,sb;
 double ttx,tty;
 double s;
-double ax,ay,cx,cy,dx,dy;
+int ax,ay,cx,cy,dx,dy;
 double bx,by;
 Window win;
 int border_width;
@@ -57,15 +57,12 @@ int win_x, win_y;
 double edx,edy,ex,ey;
 double eo1,eo2,eo3,eo4;
 double xt,yt;
-double test1,test2;
 //double tx,ty;
 int kk;
 int j;
 double distx,disty;
 double dist;
-double pr1,pr2,pr3,pr4;
-double xnew , ynew;
-double ptest1,ptest2;
+long pr1,pr2,pr3,pr4;
 
 XWMHints *wm_hints;
 XClassHint *class_hints;
@@ -83,20 +80,21 @@ Colormap color_map;
 XColor tmp_color1, tmp_color2;
 
 
-int incr;
-int incr_1;
-int incr_2;
-int incr_12;
-int incr_base;
-int incr_base1;
-int incr_base2;
-int incr01;
-double chargx;
-double chargy;
-double chgx,chgy;
-int incr_last;
-int incr_ls;
-int incrsa;
+int incr=0;
+int incr_1=0;
+int incr_2=0;
+int incr_12=0;
+int incr_base=0;
+int incr_base1=0;
+int incr_base2=0;
+int incr01=0;
+int chargx;
+int chargy;
+int chgx,chgy;
+int incr_last=0;
+int incr_ls=0;
+int incrsa=0;
+
 
 void Draw(int argc , char **argv)
 {
@@ -169,9 +167,11 @@ FILE *pf;
 
 
 
-void find(double vis1[][2],int orgcnt,int xsnew,int ysnew,double pxn1,double pyn1,double cxn1,double cyn1,double dxn1,double dyn1,double exn1,double eyn1,double chrgx,double chrgy,double xstart1,double ystart1)
+
+
+void find(int vis1[][2],int orgcnt,int xsnew,int ysnew,int pxn1,int pyn1,int cxn1,int cyn1,int dxn1,int dyn1,int exn1,int eyn1,int chrgx,int chrgy,int xstart1,int ystart1)
 {
-double vchgx,vchgy;
+int vchgx,vchgy;
 double distch,distchx,distchy;
 double chplx,chply,chmx,chmy,chqx,chqy;
 double orch;
@@ -184,12 +184,12 @@ int orcnt=orgcnt;
 double edxn1,edyn1;
 int found_1;
 found_1=0;
-double fndvr[10][40][12];
-double fndvr1[10][40][14];
-double fndvr12[20][40][12];
-double fndvrb2[20][40][12];
-double fndvrls[10][40][14];
-double fndsa[10][50][14];
+int fndvr[10][32][12];
+int fndvr1[10][32][14];
+int fndvr12[20][32][12];
+int fndvrb2[20][32][12];
+int fndvrls[10][40][14];
+int fndsa[10][32][14];
 int found2;
 found2=0;
 
@@ -225,7 +225,7 @@ int edn1;
 int flag1,k;
 double eo1n1,eo2n1;
 int i;
-double qxn1,qyn1;
+int qxn1,qyn1;
 double txn1,tyn1,san1,sbn1,sn1;
 double axn,ayn,bxn,byn;
 
@@ -234,23 +234,8 @@ pxcomp1=pxn1;
 pycomp1=pyn1;
 edd1=orgcnt;
 
-
 or1=(xstart1*cyn1)-(ystart1*cxn1)-(pxn1*cyn1)+(pxn1*ystart1)+(pyn1*cxn1)-(pyn1*xstart1);
 or2=(xstart1*eyn1)-(ystart1*exn1)-(pxn1*eyn1)+(pxn1*ystart1)+(pyn1*exn1)-(pyn1*xstart1);
-
-
-if(or1>-0.1 && or1<0.1)
-{
-or1=-1.0;
-}
-else if(or2>-0.1 && or2<0.1)
-{
-or2=-1.0;
-}
-
-
-//printf("\n **********or1 and or2*********** %lf,%lf,%lf \n",or1,or2,(or1*or2));
-
 
 int t;				
 if(or1*or2<0)
@@ -285,50 +270,12 @@ int check;
 check=t-1;
 
 
-double dx,dx1,dy1,dy,d,d1;
-dx=(vis1[t][0]-chrgx);
-dy=(vis1[t][1]-chrgy);
-dx=dx*dx;
-dy=dy*dy;
-d=dx+dy;
-d=sqrt(d);
-
-if(t!=orgcnt-1)
+if((vis1[t-1][0]==cxn1 && vis1[t-1][1]==cyn1) || (cxn1==chrgx && cyn1==chrgy) || (vis1[spc][0]==cxn1 && vis1[spc][1]==cyn1))
 {
-dx1=(vis1[t][0]-vis1[t+1][0]);
-dy1=(vis1[t][1]-vis1[t+1][1]);
-dx1=dx1*dx1;
-dy1=dy1*dy1;
-d1=dx1+dy1;
-d1=sqrt(d1);
-}
-else
-{
-dx1=(vis1[t][0]-vis1[0][0]);
-dy1=(vis1[t][1]-vis1[0][1]);
-dx1=dx1*dx1;
-dy1=dy1*dy1;
-d1=dx1+dy1;
-d1=sqrt(d1);
-}
-
-
-
-int loop=0;
-if(d<d1 && chrgy!=0.0)
-{
-//printf("\nloop\n");
-loop++;
-}
-
-
-if(((vis1[t-1][0]==cxn1 && vis1[t-1][1]==cyn1) || (cxn1==chrgx && cyn1==chrgy)  || (vis1[spc][0]==cxn1 && vis1[spc][1]==cyn1)) && loop==0)
-{
-//printf("\n ed++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
-
 printf("new starting point %d,%d\n",xsnew,ysnew);
-printf("i-1 %lf,%lf\n",cxn1,cyn1);
-printf("i+1 %lf,%lf\n",dxn1,dyn1);
+printf("i-1 %d,%d\n",cxn1,cyn1);
+printf("i+1 %d,%d\n",dxn1,dyn1);
+
 flag1=0;
 while(vis1[t][0]!=xsnew || vis1[t][1]!=ysnew)
 {
@@ -351,7 +298,7 @@ while(vis1[t][0]!=xsnew || vis1[t][1]!=ysnew)
 	}
 	
 }
-double vertex1[flag1][2];
+int vertex1[flag1][2];
 k=1;
 while(vis1[ch][0]!=xsnew || vis1[ch][1]!=ysnew)
 {
@@ -505,7 +452,7 @@ break;
 else
 {
 
-//XDrawLine(display_ptr, win, gc_red, xstrt*4 , ystrt*4 ,qxn1*4,qyn1*4);
+//XDrawLine(display_ptr, win, gc_dot, xstrt , ystrt ,qxn1,qyn1);
 	distx=(qxn1-xstrt)*(qxn1-xstrt);
 	disty=(qyn1-ystrt)*(qyn1-ystrt);
 	dist=distx+disty;
@@ -518,7 +465,7 @@ else
 	xx=qxn1+(qxn1-xstrt)/dist*100;
 	yy=qyn1+(qyn1-ystrt)/dist*100;
 
-//XDrawLine(display_ptr, win, gc_dot, qxn1*4 , qyn1*4 ,xx*4,yy*4);
+//XDrawLine(display_ptr, win, gc_dot, qxn1 , qyn1 ,xx,yy);
 if(kk<flag1-1)
 {
 edxn1=vertex1[kk+1][0];
@@ -535,25 +482,18 @@ eyn1=vertex1[kk][1];
 }
 eo1n1=(xt*edyn1)-(yt*edxn1)-(xx*edyn1)+(xx*yt)+(yy*edxn1)-(yy*xt);
 eo2n1=(xt*eyn1)-(yt*exn1)-(xx*eyn1)+(xx*yt)+(yy*exn1)-(yy*xt);
-if(eo1n1>-0.1 && eo1n1<0.1)
-{
-eo1n1=1.0;
-}
-else if(eo2n1>-0.1 && eo2n1<0.1)
-{
-eo2n1=1.0;
-}
 double ee;
 ee=eo1n1*eo2n1;
         if((ee)<0)
 	{
-	
-	break;
+		break;
 	}
 	else
 	{
+	xx=qxn1+(qxn1-xstrt)/dist*200;
+	yy=qyn1+(qyn1-ystrt)/dist*200;
+   
 	
-
 
 	    int edn1;
 	    for(edn1=0;edn1<flag1;edn1++)
@@ -586,13 +526,9 @@ ee=eo1n1*eo2n1;
 	xr3=(dxn1*ayn)-(axn*dyn1)-(cxn1*ayn)+(cxn1*dyn1)+(cyn1*axn)-(cyn1*dxn1);
 	xr4=(dxn1*byn)-(bxn*dyn1)-(cxn1*byn)+(cxn1*dyn1)+(cyn1*bxn)-(cyn1*dxn1);
 		
-	
-			
-
 
 			if( ((xr1*xr2)<0 && (xr3*xr4)<0))
 		 	{
-			
 		   	//	printf("\nintersectig this one\n");
 			san1=(bxn-axn)*(cyn1-ayn)-(byn-ayn)*(cxn1-axn);
 			sbn1=(bxn-axn)*(cyn1-dyn1)-(byn-ayn)*(cxn1-dxn1);
@@ -627,30 +563,12 @@ ee=eo1n1*eo2n1;
     pr3=(vertex1[j][0]*qyn1)+(vertex1[0][0]*vertex1[j][1])+(vertex1[0][1]*qxn1)-(vertex1[j][0]*vertex1[0][1])-(vertex1[j][1]*qxn1)-(vertex1[0][0]*qyn1);
     pr4=(vertex1[j][0]*tyn1)+(vertex1[0][0]*vertex1[j][1])+(vertex1[0][1]*txn1)-(vertex1[j][0]*vertex1[0][1])-(vertex1[j][1]*txn1)-(vertex1[0][0]*tyn1);			
 
-}
-
-if(pr4>-0.1 && pr4<0.1)
-{
-pr4=1.0;
-}
-else if(pr3>-0.1 && pr3<0.1)
-{
-pr3=1.0;
-}
-else if(pr2>-0.1 && pr2<0.1)
-{
-pr2=1.0;
-}
-else if(pr1>-0.1 && pr1<0.1)
-{
-pr1=1.0;
-}
-
+			}
 
 
 				if((pr3*pr4)<0 && (pr1*pr2)<0)
 				{
-				
+				//printf("\n there is an edge1 intersecting this line \n");
 				break;
 				}
 				else if(j==flag1-1)
@@ -662,7 +580,7 @@ pr1=1.0;
 				else
 				{
 				
-				XDrawLine(display_ptr, win, gc_dot, qxn1*4 , qyn1*4 ,txn1*4, tyn1*4);
+				XDrawLine(display_ptr, win, gc_dot, qxn1 , qyn1 ,txn1, tyn1);
 				int h;
 				int dot;
 				dot=0;
@@ -761,15 +679,22 @@ find(vis1,orcnt,fndvr[incr][i][0],fndvr[incr][i][1],fndvr[incr][i][2],fndvr[incr
 
 
 }
+if(incr_base2==2)
+{
+	int j;	
+	for(j=0;j<found2;j++)
+	{
+	
+	}
+
+}
 
 }
 else
 {
-
-//printf("\n ed ---------------------------------------------------\n");
 printf("new starting point %d,%d\n",xsnew,ysnew);
-printf("i-1 %lf,%lf\n",cxn1,cyn1);
-printf("i+1 %lf,%lf\n",dxn1,dyn1);
+printf("i-1 %d,%d\n",cxn1,cyn1);
+printf("i+1 %d,%d\n",dxn1,dyn1);
 
 incr_1++;
 flag1=0;
@@ -939,20 +864,20 @@ break;
 }
 else
 {
-//XDrawLine(display_ptr, win, gc, xstrt*4 , ystrt*4 ,qxn1*4,qyn1*4);
+//XDrawLine(display_ptr, win, gc_red, xstrt , ystrt ,qxn1,qyn1);
 	distx=(qxn1-xstrt)*(qxn1-xstrt);
 	disty=(qyn1-ystrt)*(qyn1-ystrt);
 	dist=distx+disty;
 	dist=sqrt(dist);
          
 	//find xnew , qnew and ttx,tty
-	xt=xstrt+(xstrt-qxn1)/dist*40;
-	yt=ystrt+(ystrt-qyn1)/dist*40;
+	xt=xstrt+(xstrt-qxn1)/dist*80;
+	yt=ystrt+(ystrt-qyn1)/dist*80;
 
-	xx=qxn1+(qxn1-xstrt)/dist*100;
-	yy=qyn1+(qyn1-ystrt)/dist*100;
+	xx=qxn1+(qxn1-xstrt)/dist*300;
+	yy=qyn1+(qyn1-ystrt)/dist*300;
 
-//XDrawLine(display_ptr, win, gc_dot, qxn1*4 , qyn1*4 ,xx*4,yy*4);
+//XDrawLine(display_ptr, win, gc_dot, qxn1 , qyn1 ,xx,yy);
 if(kk<flag1-1)
 {
 edxn1=vertex1[kk+1][0];
@@ -1008,10 +933,7 @@ ee=eo1n1*eo2n1;
 
 	xr3=(dxn1*ayn)-(axn*dyn1)-(cxn1*ayn)+(cxn1*dyn1)+(cyn1*axn)-(cyn1*dxn1);
 	xr4=(dxn1*byn)-(bxn*dyn1)-(cxn1*byn)+(cxn1*dyn1)+(cyn1*bxn)-(cyn1*dxn1);
-	
-
-//printf("\n___ qxn1,qyn1,xr1,xr2,xr3,xr4 %d,%d,%lf,%lf,%lf,%lf\n",qxn1,qyn1,xr1,xr2,xr3,xr4);	
-	
+		
 			if( ((xr1*xr2)<0 && (xr3*xr4)<0))
 		 	{
 		   		//printf("\nintersectig this one\n");
@@ -1052,24 +974,6 @@ ee=eo1n1*eo2n1;
 
 			}
 
-if(pr4>-0.1 && pr4<0.1)
-{
-pr4=-1.0;
-}
-else if(pr3>-0.1 && pr3<0.1)
-{
-pr3=-1.0;
-}
-else if(pr2>-0.1 && pr2<0.1)
-{
-pr2=-1.0;
-}
-else if(pr1>-0.1 && pr1<0.1)
-{
-pr1=-1.0;
-}
-
-
                	    
 				if((pr3*pr4)<0 && (pr1*pr2)<0)
 				{
@@ -1085,7 +989,7 @@ pr1=-1.0;
 				else
 				{
 				
-				XDrawLine(display_ptr, win, gc_dot, qxn1*4 , qyn1*4 ,txn1*4, tyn1*4);
+				XDrawLine(display_ptr, win, gc_dot, qxn1 , qyn1 ,txn1, tyn1);
 				
 				int h;
 				int dot=0;
@@ -1303,7 +1207,7 @@ find(vis1,orcnt,fndvr1[4][i][0],fndvr1[4][i][1],fndvr1[4][i][2],fndvr1[4][i][3],
 
 
 }
-/*
+
 if(incr_1==5)
 {
 
@@ -1315,7 +1219,7 @@ find(vis1,orcnt,fndvr1[5][i][0],fndvr1[5][i][1],fndvr1[5][i][2],fndvr1[5][i][3],
 
 
 }
-*/
+
 
 	
 }
@@ -1323,10 +1227,10 @@ find(vis1,orcnt,fndvr1[5][i][0],fndvr1[5][i][1],fndvr1[5][i][2],fndvr1[5][i][3],
 }
 else
 {
-printf("\n next \n");
 printf("new starting point %d,%d\n",xsnew,ysnew);
-printf("i-1 %lf,%lf\n",cxn1,cyn1);
-printf("i+1 %lf,%lf\n",dxn1,dyn1);
+printf("i-1 %d,%d\n",cxn1,cyn1);
+printf("i+1 %d,%d\n",dxn1,dyn1);
+
 int spcl;
 int chv;
 int l;
@@ -1359,7 +1263,6 @@ spcl=34;
 
 if((vis1[l-1][0]==dxn1 && vis1[l-1][1]==dyn1) || (vis1[spcl-1][0]==dxn1 && vis1[spcl-1][1]==dyn1))
 {
-//printf("\n MOVE FORWARD FORWARD \n");
 incr_last++;
 flag1=0;
 while(vis1[l][0]!=xsnew || vis1[l][1]!=ysnew)
@@ -1384,7 +1287,7 @@ while(vis1[l][0]!=xsnew || vis1[l][1]!=ysnew)
 	
 }
 
-double vertex1[flag1][2];
+int vertex1[flag1][2];
 k=1;
 while(vis1[chv][0]!=xsnew || vis1[chv][1]!=ysnew)
 {
@@ -1544,20 +1447,20 @@ break;
 else
 {
 
-//XDrawLine(display_ptr, win, gc_red, xstrt*4 , ystrt*4 ,qxn1*4,qyn1*4);
+//XDrawLine(display_ptr, win, gc_green, xstrt , ystrt ,qxn1,qyn1);
         distx=(qxn1-xstrt)*(qxn1-xstrt);
 	disty=(qyn1-ystrt)*(qyn1-ystrt);
 	dist=distx+disty;
 	dist=sqrt(dist);
          
 	//find xnew , qnew and ttx,tty
-	xt=xstrt+(xstrt-qxn1)/dist*30;
-	yt=ystrt+(ystrt-qyn1)/dist*30;
+	xt=xstrt+(xstrt-qxn1)/dist*80;
+	yt=ystrt+(ystrt-qyn1)/dist*80;
 
-	xx=qxn1+(qxn1-xstrt)/dist*50;
-	yy=qyn1+(qyn1-ystrt)/dist*50;
+	xx=qxn1+(qxn1-xstrt)/dist*300;
+	yy=qyn1+(qyn1-ystrt)/dist*300;
 
-//XDrawLine(display_ptr, win, gc_dot, qxn1*4 , qyn1*4 ,xx*4,yy*4);
+//XDrawLine(display_ptr, win, gc_dot, qxn1 , qyn1 ,xx,yy);
 if(kk<flag1-1)
 {
 edxn1=vertex1[kk+1][0];
@@ -1572,27 +1475,12 @@ edyn1=vertex1[0][1];
 exn1=vertex1[kk][0];
 eyn1=vertex1[kk][1];
 }
-
-
-
 eo1n1=(xt*edyn1)-(yt*edxn1)-(xx*edyn1)+(xx*yt)+(yy*edxn1)-(yy*xt);
 eo2n1=(xt*eyn1)-(yt*exn1)-(xx*eyn1)+(xx*yt)+(yy*exn1)-(yy*xt);
-if(eo1n1>-0.1 && eo1n1<0.1)
-{
-eo1n1=1.0;
-}
-else if(eo2n1>-0.1 && eo2n1<0.1)
-{
-eo2n1=1.0;
-}
-
-
-
 double ee;
 ee=eo1n1*eo2n1;
         if((ee)<0)
 	{
-			
 	break;
 	}
 	else
@@ -1628,12 +1516,9 @@ ee=eo1n1*eo2n1;
 
 	xr3=(dxn1*ayn)-(axn*dyn1)-(cxn1*ayn)+(cxn1*dyn1)+(cyn1*axn)-(cyn1*dxn1);
 	xr4=(dxn1*byn)-(bxn*dyn1)-(cxn1*byn)+(cxn1*dyn1)+(cyn1*bxn)-(cyn1*dxn1);
-	
 		
 		if( ((xr1*xr2)<0 && (xr3*xr4)<0))
 		 {
-			
-		
 		   		//printf("\nintersectig this one\n");
 			san1=(bxn-axn)*(cyn1-ayn)-(byn-ayn)*(cxn1-axn);
 			sbn1=(bxn-axn)*(cyn1-dyn1)-(byn-ayn)*(cxn1-dxn1);
@@ -1666,28 +1551,9 @@ ee=eo1n1*eo2n1;
     pr3=(vertex1[j][0]*qyn1)+(vertex1[0][0]*vertex1[j][1])+(vertex1[0][1]*qxn1)-(vertex1[j][0]*vertex1[0][1])-(vertex1[j][1]*qxn1)-(vertex1[0][0]*qyn1);
     pr4=(vertex1[j][0]*tyn1)+(vertex1[0][0]*vertex1[j][1])+(vertex1[0][1]*txn1)-(vertex1[j][0]*vertex1[0][1])-(vertex1[j][1]*txn1)-(vertex1[0][0]*tyn1);			
 			}
-
-if(pr4>-0.1 && pr4<0.1)
-{
-pr4=1.0;
-}
-else if(pr3>-0.1 && pr3<0.1)
-{
-pr3=1.0;
-}
-else if(pr2>-0.1 && pr2<0.1)
-{
-pr2=1.0;
-}
-else if(pr1>-0.1 && pr1<0.1)
-{
-pr1=1.0;
-}
-
-	
 				if((pr3*pr4)<0 && (pr1*pr2)<0)
 				{
-				
+				//printf("\n there is an edge1 intersecting this line \n");
 				break;
 				}
 				else if(j==flag1-1)
@@ -1698,7 +1564,7 @@ pr1=1.0;
 				}
 				else
 				{
-				XDrawLine(display_ptr, win, gc_dot, qxn1*4 , qyn1*4 ,txn1*4, tyn1*4);
+				XDrawLine(display_ptr, win, gc_dot, qxn1 , qyn1 ,txn1, tyn1);
 				int h;
 				int dot;
 				dot=0;
@@ -1711,6 +1577,7 @@ pr1=1.0;
 						}
 						else
 						{
+						//dot=0;				
 						}
 
 					}	
@@ -1899,11 +1766,6 @@ find(vis1,orcnt,fndvrls[4][i][0],fndvrls[4][i][1],fndvrls[4][i][2],fndvrls[4][i]
 
 else
 {
-//printf("\n USUAL SAMESAME same same same side \n");
-printf("new starting point %d,%d\n",xsnew,ysnew);
-printf("i-1 %d,%d\n",cxn1,cyn1);
-printf("i+1 %d,%d\n",dxn1,dyn1);
-
 flag1=0;
 incrsa++;
 while(vis1[l][0]!=xsnew || vis1[l][1]!=ysnew)
@@ -1933,7 +1795,7 @@ while(vis1[l][0]!=xsnew || vis1[l][1]!=ysnew)
    
 }
 
-double vertex1[flag1][2];
+int vertex1[flag1][2];
 k=1;
 while(vis1[chv][0]!=xsnew || vis1[chv][1]!=ysnew)
 {
@@ -2079,20 +1941,20 @@ break;
 else
 {
 
-//XDrawLine(display_ptr, win, gc_red, xstrt*4 , ystrt*4 ,qxn1*4,qyn1*4);
+//XDrawLine(display_ptr, win, gc_green, xstrt , ystrt ,qxn1,qyn1);
         distx=(qxn1-xstrt)*(qxn1-xstrt);
 	disty=(qyn1-ystrt)*(qyn1-ystrt);
 	dist=distx+disty;
 	dist=sqrt(dist);
          
 	//find xnew , qnew and ttx,tty
-	xt=xstrt+(xstrt-qxn1)/dist*10;
-	yt=ystrt+(ystrt-qyn1)/dist*10;
+	xt=xstrt+(xstrt-qxn1)/dist*80;
+	yt=ystrt+(ystrt-qyn1)/dist*80;
 
-	xx=qxn1+(qxn1-xstrt)/dist*50;
-	yy=qyn1+(qyn1-ystrt)/dist*50;
+	xx=qxn1+(qxn1-xstrt)/dist*200;
+	yy=qyn1+(qyn1-ystrt)/dist*200;
 
-//XDrawLine(display_ptr, win, gc_red, qxn1*4 , qyn1*4 ,xx*4,yy*4);
+//XDrawLine(display_ptr, win, gc_dot, qxn1 , qyn1 ,xx,yy);
 if(kk<flag1-1)
 {
 edxn1=vertex1[kk+1][0];
@@ -2109,18 +1971,10 @@ eyn1=vertex1[kk][1];
 }
 eo1n1=(xt*edyn1)-(yt*edxn1)-(xx*edyn1)+(xx*yt)+(yy*edxn1)-(yy*xt);
 eo2n1=(xt*eyn1)-(yt*exn1)-(xx*eyn1)+(xx*yt)+(yy*exn1)-(yy*xt);
-if(eo1n1>-0.1 && eo1n1<0.1)
-{
-eo1n1=-1.0;
-}
-
-
-
 double ee;
 ee=eo1n1*eo2n1;
         if((ee)<0)
 	{
-	
 	break;
 	}
 	else
@@ -2157,14 +2011,10 @@ ee=eo1n1*eo2n1;
 
 	xr3=(dxn1*ayn)-(axn*dyn1)-(cxn1*ayn)+(cxn1*dyn1)+(cyn1*axn)-(cyn1*dxn1);
 	xr4=(dxn1*byn)-(bxn*dyn1)-(cxn1*byn)+(cxn1*dyn1)+(cyn1*bxn)-(cyn1*dxn1);
-	
 		
-	
 		if( ((xr1*xr2)<0 && (xr3*xr4)<0))
 		 {
-		 
-			 
-	  		//printf("\nintersectig this one\n");
+		   		//printf("\nintersectig this one\n");
 			san1=(bxn-axn)*(cyn1-ayn)-(byn-ayn)*(cxn1-axn);
 			sbn1=(bxn-axn)*(cyn1-dyn1)-(byn-ayn)*(cxn1-dxn1);
 
@@ -2181,33 +2031,21 @@ ee=eo1n1*eo2n1;
 			
 			if(j<flag1-1)
 			{						
-    pr1=(qxn1*vertex1[j+1][1])-(vertex1[j+1][0]*qyn1)-(txn1*vertex1[j+1][1])+(txn1*qyn1)+(tyn1*vertex1[j+1][0])-(tyn1*qxn1);
-    pr2=(qxn1*vertex1[j][1])-(vertex1[j][0]*qyn1)-(txn1*vertex1[j][1])+(txn1*qyn1)+(tyn1*vertex1[j][0])-(tyn1*qxn1);
+    pr1=(qxn1*vertex1[j+1][1])+(txn1*qyn1)+(tyn1*vertex1[j+1][0]) -(vertex1[j+1][0]*qyn1)-(txn1*vertex1[j+1][1])-(tyn1*qxn1);
+    pr2=(qxn1*vertex1[j][1])+(txn1*qyn1)+(tyn1*vertex1[j][0]) -(vertex1[j][0]*qyn1)-(txn1*vertex1[j][1])-(tyn1*qxn1);
 
-    pr3=(vertex1[j][0]*qyn1)-(vertex1[j][1]*qxn1)-(vertex1[j+1][0]*qyn1)+(vertex1[j+1][0]*vertex1[j][1])+(vertex1[j+1][1]*qxn1)-(vertex1[j][0]*vertex1[j+1][1]);
-    pr4=(vertex1[j][0]*tyn1)-(vertex1[j][1]*txn1)-(vertex1[j+1][0]*tyn1)+(vertex1[j+1][0]*vertex1[j][1])+(vertex1[j+1][1]*txn1)-(vertex1[j][0]*vertex1[j+1][1]);		
+    pr3=(vertex1[j][0]*qyn1)+(vertex1[j+1][0]*vertex1[j][1])+(vertex1[j+1][1]*qxn1)-(vertex1[j][0]*vertex1[j+1][1])-(vertex1[j][1]*qxn1)-(vertex1[j+1][0]*qyn1);
+    pr4=(vertex1[j][0]*tyn1)+(vertex1[j+1][0]*vertex1[j][1])+(vertex1[j+1][1]*txn1)-(vertex1[j][0]*vertex1[j+1][1])-(vertex1[j][1]*txn1)-(vertex1[j+1][0]*tyn1);			
 			}
 
 			else
 			{
-    pr1=(qxn1*vertex1[0][1])-(vertex1[0][0]*qyn1)-(txn1*vertex1[0][1])+(txn1*qyn1)+(tyn1*vertex1[0][0])-(tyn1*qxn1);
-    pr2=(qxn1*vertex1[j][1])-(vertex1[j][0]*qyn1)-(txn1*vertex1[j][1])+(txn1*qyn1)+(tyn1*vertex1[j][0])-(tyn1*qxn1);
+    pr1=(qxn1*vertex1[0][1])+(txn1*qyn1)+(tyn1*vertex1[0][0]) -(vertex1[0][0]*qyn1)-(txn1*vertex1[0][1])-(tyn1*qxn1);
+    pr2=(qxn1*vertex1[j][1])+(txn1*qyn1)+(tyn1*vertex1[j][0]) -(vertex1[j][0]*qyn1)-(txn1*vertex1[j][1])-(tyn1*qxn1);
 
-    pr3=(vertex1[j][0]*qyn1)-(vertex1[j][1]*qxn1)-(vertex1[0][0]*qyn1)+(vertex1[0][0]*vertex1[j][1])+(vertex1[0][1]*qxn1)-(vertex1[j][0]*vertex1[0][1]);
-    pr4=(vertex1[j][0]*tyn1)-(vertex1[j][1]*txn1)-(vertex1[0][0]*tyn1)+(vertex1[0][0]*vertex1[j][1])+(vertex1[0][1]*txn1)-(vertex1[j][0]*vertex1[0][1]);		
-}
-
-/*
-if(pr4>-0.1 && pr4<0.1)
-{
-pr4=-1.0;
-}
-*/
-
-
-
-
-
+    pr3=(vertex1[j][0]*qyn1)+(vertex1[0][0]*vertex1[j][1])+(vertex1[0][1]*qxn1)-(vertex1[j][0]*vertex1[0][1])-(vertex1[j][1]*qxn1)-(vertex1[0][0]*qyn1);
+    pr4=(vertex1[j][0]*tyn1)+(vertex1[0][0]*vertex1[j][1])+(vertex1[0][1]*txn1)-(vertex1[j][0]*vertex1[0][1])-(vertex1[j][1]*txn1)-(vertex1[0][0]*tyn1);			
+			}
 				if((pr3*pr4)<0 && (pr1*pr2)<0)
 				{
 				//printf("\n there is an edge1 intersecting this line \n");
@@ -2221,7 +2059,7 @@ pr4=-1.0;
 				}
 				else
 				{
-		XDrawLine(display_ptr, win, gc_dot, qxn1*4 , qyn1*4 ,txn1*4, tyn1*4);
+				XDrawLine(display_ptr, win, gc_dot, qxn1 , qyn1 ,txn1, tyn1);
 				int h;
 				int dot;
 				dot=0;
@@ -2372,7 +2210,6 @@ find(vis1,orcnt,fndsa[2][i][0],fndsa[2][i][1],fndsa[2][i][2],fndsa[2][i][3],fnds
 
 }
 
-/*
 if(incrsa==3)
 {	
 	for(i=0;i<found_11;i++)
@@ -2382,11 +2219,10 @@ find(vis1,orcnt,fndsa[3][i][0],fndsa[3][i][1],fndsa[3][i][2],fndsa[3][i][3],fnds
 
 	}
 }
-*/
 }
 }
 
-void find_visiblity(double vis[][2],int count,double qxnew,double qynew,double pxn,double pyn,int pkx,int pky,int pk1x,int pk1y,int i1x,int i1y,int ix,int iy,int edge,int x,int y)
+void find_visiblity(int vis[][2],int count,int qxnew,int qynew,int pxn,int pyn,int pkx,int pky,int pk1x,int pk1y,int i1x,int i1y,int ix,int iy,int edge,int x,int y)
 {
 double oreint1;
 double oreint2;
@@ -2407,17 +2243,17 @@ double qxn,qyn;
 double txn,tyn,san,sbn,sn;
 double axn,ayn,bxn,byn;
 double cxn,cyn,dxn,dyn;
-double pxcomp,pycomp;
+int pxcomp,pycomp;
 
 pxcomp=pxn;
 pycomp=pyn;
 edd=edge;
 int found;
 found=0;
-double fndver[30][12];
+int fndver[30][12];
 int found1;
 found1=0;
-double fndver2[40][12];
+int fndver2[30][12];
 
 or1=(x*cy)-(y*cx)-(px*cy)+(px*y)+(py*cx)-(py*x);
 or2=(x*edy)-(y*edx)-(px*edy)+(px*y)+(py*edx)-(py*x);
@@ -2456,7 +2292,7 @@ while(vis[edd][0]!=qxnew || vis[edd][1]!=qynew)
 	
 }
 k=1;
-double vertex[flag][2];
+int vertex[flag][2];
 while(vis[edge][0]!=qxnew || vis[edge][1]!=qynew)
 {
 vertex[0][0]=pxn;
@@ -2619,13 +2455,11 @@ else
 	disty=(qyn-ystart)*(qyn-ystart);
 	dist=distx+disty;
 	dist=sqrt(dist);
-	xt=xstart+(xstart-qxn)/dist*30;
-	yt=ystart+(ystart-qyn)/dist*30;
+	xt=xstart+(xstart-qxn)/dist*101;
+	yt=ystart+(ystart-qyn)/dist*101;
 
-	xx=qxn+(qxn-xstart)/dist*100;
-	yy=qyn+(qyn-ystart)/dist*100;
-//XDrawLine(display_ptr, win, gc_red, qxn*4 , qyn*4 ,xstart*4, ystart*4);
-//XDrawLine(display_ptr, win, gc_yellow, qxn*4 , qyn*4 ,xx*4, yy*4);
+	xx=qxn+(qxn-xstart)/dist*150;
+	yy=qyn+(qyn-ystart)/dist*150;
 
 if(kk<flag)
 {
@@ -2643,24 +2477,17 @@ eyn=vertex[kk-1][1];
 }
 eo1n=(xt*edyn)-(yt*edxn)-(xx*edyn)+(xx*yt)+(yy*edxn)-(yy*xt);
 eo2n=(xt*eyn)-(yt*exn)-(xx*eyn)+(xx*yt)+(yy*exn)-(yy*xt);
-if(eo1n>-0.1 && eo1n<0.1)
-{
-eo1n=1.0;
-}
-else if(eo2n>-0.1 && eo2n<0.1)
-{
-eo2n=1.0;
-}
 double eoo;
 eoo=eo1n*eo2n;
 if(eoo<0)
 	{
-
+	
 	break;
 	}
 	else
 	{
-	
+	xx=qxn+(qxn-xstart)/dist*254;
+	yy=qyn+(qyn-ystart)/dist*254;
 	for(edn=0;edn<flag-1;edn++)
 	    {
 		// first line
@@ -2692,7 +2519,6 @@ if(eoo<0)
 	if( ((xr1*xr2)<0 && (xr3*xr4)<0))
 		 		{
 //		   		printf("\nintersecting line is there\n");
-			
 			san=(bxn-axn)*(cyn-ayn)-(byn-ayn)*(cxn-axn);
 			sbn=(bxn-axn)*(cyn-dyn)-(byn-ayn)*(cxn-dxn);
 
@@ -2709,51 +2535,29 @@ if(eoo<0)
 		for(j=0;j<flag;j++)
 			{
 			
-if(j<flag-1)									
-{
-		/* determinant with abc and abd for lines ab and cd*/	
-    pr1=(qxn*vertex[j+1][1])-(vertex[j+1][0]*qyn)-(txn*vertex[j+1][1])+(txn*qyn)+(tyn*vertex[j+1][0])-(tyn*qxn);
-    pr2=(qxn*vertex[j][1])-(vertex[j][0]*qyn)-(txn*vertex[j][1])+(txn*qyn)+(tyn*vertex[j][0])-(tyn*qxn);
+	if(j<flag-1)
+	{								
+			/* determinant with abc and abd for lines ab and cd*/	
+    pr1=(qxn*vertex[j+1][1])+(txn*qyn)+(tyn*vertex[j+1][0]) -(vertex[j+1][0]*qyn)-(txn*vertex[j+1][1])-(tyn*qxn);
+    pr2=(qxn*vertex[j][1])+(txn*qyn)+(tyn*vertex[j][0]) -(vertex[j][0]*qyn)-(txn*vertex[j][1])-(tyn*qxn);
 
     /* determinant for cda and cdb for line ab and cd*/	
-    pr3=(vertex[j+1][0]*qyn)-(vertex[j+1][1]*qxn)-(vertex[j][0]*qyn)+(vertex[j][0]*vertex[j+1][1])+(vertex[j][1]*qxn)-(vertex[j][1]*vertex[j+1][0]);
- pr4=(vertex[j+1][0]*tyn)-(vertex[j+1][1]*txn)-(vertex[j][0]*tyn)+(vertex[j][0]*vertex[j+1][1])+(vertex[j][1]*txn)-(vertex[j][1]*vertex[j+1][0]);			
-}
-else
-{
-
-		/* determinant with abc and abd for lines ab and cd*/	
-    pr1=(qxn*vertex[j+1][1])-(vertex[0][0]*qyn)-(txn*vertex[0][1])+(txn*qyn)+(tyn*vertex[0][0])-(tyn*qxn);
-    pr2=(qxn*vertex[j][1])-(vertex[j][0]*qyn)-(txn*vertex[j][1])+(txn*qyn)+(tyn*vertex[j][0])-(tyn*qxn);
+    pr3=(vertex[j][0]*qyn)+(vertex[j+1][0]*vertex[j][1])+(vertex[j+1][1]*qxn)-(vertex[j][0]*vertex[j+1][1])-(vertex[j][1]*qxn)-(vertex[j+1][0]*qyn);
+    pr4=(vertex[j][0]*tyn)+(vertex[j+1][0]*vertex[j][1])+(vertex[j+1][1]*txn)-(vertex[j][0]*vertex[j+1][1])-(vertex[j][1]*txn)-(vertex[j+1][0]*tyn);			
+	}
+	else
+	{
+	
+			/* determinant with abc and abd for lines ab and cd*/	
+    pr1=(qxn*vertex[0][1])+(txn*qyn)+(tyn*vertex[0][0]) -(vertex[0][0]*qyn)-(txn*vertex[0][1])-(tyn*qxn);
+    pr2=(qxn*vertex[j][1])+(txn*qyn)+(tyn*vertex[j][0]) -(vertex[j][0]*qyn)-(txn*vertex[j][1])-(tyn*qxn);
 
     /* determinant for cda and cdb for line ab and cd*/	
-    pr3=(vertex[0][0]*qyn)-(vertex[0][1]*qxn)-(vertex[j][0]*qyn)+(vertex[j][0]*vertex[0][1])+(vertex[j][1]*qxn)-(vertex[j][1]*vertex[0][0]);
- pr4=(vertex[0][0]*tyn)-(vertex[0][1]*txn)-(vertex[j][0]*tyn)+(vertex[j][0]*vertex[0][1])+(vertex[j][1]*txn)-(vertex[j][1]*vertex[0][0]);			
-
-}
-
-
-if(pr4>-0.1 && pr4<0.1)
-{
-pr4=-1.0;
-}
-else if(pr3>-0.1 && pr3<0.1)
-{
-pr3=-1.0;
-}
-else if(pr2>-0.1 && pr2<0.1)
-{
-pr2=-1.0;
-}
-else if(pr1>-0.1 && pr1<0.1)
-{
-pr1=-1.0;
-}
-
-
+    pr3=(vertex[j][0]*qyn)+(vertex[0][0]*vertex[j][1])+(vertex[0][1]*qxn)-(vertex[j][0]*vertex[0][1])-(vertex[j][1]*qxn)-(vertex[0][0]*qyn);
+    pr4=(vertex[j][0]*tyn)+(vertex[0][0]*vertex[j][1])+(vertex[0][1]*txn)-(vertex[j][0]*vertex[0][1])-(vertex[j][1]*txn)-(vertex[0][0]*tyn);
+	}
 				if((pr3*pr4)<0 && (pr1*pr2)<0)
 				{
-
 				break;
 				}
 				else if((j==flag-1))
@@ -2764,8 +2568,7 @@ pr1=-1.0;
 				}
 				else
 				{
-
-			XDrawLine(display_ptr, win, gc_dot, qxn*4 , qyn*4 ,txn*4, tyn*4);
+				XDrawLine(display_ptr, win, gc_dot, qxn , qyn ,txn, tyn);
 				int h;
 				int dot;
 				dot=0;
@@ -2778,21 +2581,18 @@ pr1=-1.0;
 				}
 				else
 				{
-				//dot=0;
+				dot=0;
 				}
 				}
 				if(dot>0)
 				{
-				chargx=0.0;
-				chargy=0.0;
-				
+				chargx=0;
+				chargy=0;
 				}	
 				else if(dot==0)
 				{
-				
-				chargy=cyn;
 				chargx=cxn;
-			
+				chargy=cyn;
 				}		
 				
 				fndver2[found1][0]=qxn;
@@ -2884,7 +2684,7 @@ while(vis[edd][0]!=qxnew || vis[edd][1]!=qynew)
 
 }
 
-double vertex[flag][2];
+int vertex[flag][2];
 k=1;
 while(vis[edge][0]!=qxnew || vis[edge][1]!=qynew)
 {
@@ -3051,16 +2851,13 @@ else
 	dist=distx+disty;
 	dist=sqrt(dist);
 
-	xt=xstart+(xstart-qxn)/dist*20;
-	yt=ystart+(ystart-qyn)/dist*20;
+	xt=xstart+(xstart-qxn)/dist*101;
+	yt=ystart+(ystart-qyn)/dist*101;
 
-	xx=qxn+(qxn-xstart)/dist*100;
-	yy=qyn+(qyn-ystart)/dist*100;
+	xx=qxn+(qxn-xstart)/dist*148.5;
+	yy=qyn+(qyn-ystart)/dist*148.5;
 
-//XDrawLine(display_ptr, win, gc_yellow ,xstart*4, ystart*4 , qxn*4 , qyn*4);
-//XDrawLine(display_ptr, win, gc_yellow, qxn*4 , qyn*4 ,xx*4,yy*4);
-	
-
+//XDrawLine(display_ptr, win, gc_red, xx , yy ,xt,yt);
 
 if(kk<flag-1)
 {
@@ -3081,15 +2878,6 @@ eyn=vertex[kk][1];
 
 eo1n=(xt*edyn)-(yt*edxn)-(xx*edyn)+(xx*yt)+(yy*edxn)-(yy*xt);
 eo2n=(xt*eyn)-(yt*exn)-(xx*eyn)+(xx*yt)+(yy*exn)-(yy*xt);
-if(eo1n>-0.1 && eo1n<0.1)
-{
-eo1n=-1.0;
-}
-else if(eo2n>-0.1 && eo2n<0.1)
-{
-eo2n=-1.0;
-}
-
 double epro=eo1n*eo2n;
         if((epro<0))
 	{
@@ -3097,6 +2885,9 @@ double epro=eo1n*eo2n;
 	}
 	else
 	{
+	xx=qxn+(qxn-xstart)/dist*300;
+	yy=qyn+(qyn-ystart)/dist*300;
+	//XDrawLine(display_ptr, win, gc_yellow, qxn , qyn ,xx,yy);
 	
 	for(edn=0;edn<flag;edn++)
 	    {
@@ -3122,18 +2913,14 @@ double epro=eo1n*eo2n;
 			dxn=vertex[0][0];
 			dyn=vertex[0][1];
 			}
-	
 	xr1=(bxn*cyn)-(cxn*byn)-(axn*cyn)+(axn*byn)+(ayn*cxn)-(ayn*bxn);
 	xr2=(bxn*dyn)-(dxn*byn)-(axn*dyn)+(axn*byn)+(ayn*dxn)-(ayn*bxn);
 
 	xr3=(dxn*ayn)-(axn*dyn)-(cxn*ayn)+(cxn*dyn)+(cyn*axn)-(cyn*dxn);
 	xr4=(dxn*byn)-(bxn*dyn)-(cxn*byn)+(cxn*dyn)+(cyn*bxn)-(cyn*dxn);
 		
-	
-			if( ((xr1*xr2)<0.0 && (xr3*xr4)<0.0))
+			if( ((xr1*xr2)<0 && (xr3*xr4)<0))
 		 		{
-	
-			
 			san=(bxn-axn)*(cyn-ayn)-(byn-ayn)*(cxn-axn);
 			sbn=(bxn-axn)*(cyn-dyn)-(byn-ayn)*(cxn-dxn);
 
@@ -3147,60 +2934,39 @@ double epro=eo1n*eo2n;
 				
 
 
-			int j;
+			
 			for(j=0;j<flag;j++)
 			{
 			
-if(j<flag-1)									
+if(j<flag-1)
 {
-		/* determinant with abc and abd for lines ab and cd*/	
-    pr1=(qxn*vertex[j+1][1])-(vertex[j+1][0]*qyn)-(txn*vertex[j+1][1])+(txn*qyn)+(tyn*vertex[j+1][0])-(tyn*qxn);
-    pr2=(qxn*vertex[j][1])-(vertex[j][0]*qyn)-(txn*vertex[j][1])+(txn*qyn)+(tyn*vertex[j][0])-(tyn*qxn);
+								
+			/* determinant with abc and abd for lines ab and cd*/	
+pr1=(qxn*vertex[j+1][1])+(txn*qyn)+(tyn*vertex[j+1][0]) -(vertex[j+1][0]*qyn)-(txn*vertex[j+1][1])-(tyn*qxn);
+pr2=(qxn*vertex[j][1])+(txn*qyn)+(tyn*vertex[j][0]) -(vertex[j][0]*qyn)-(txn*vertex[j][1])-(tyn*qxn);
 
     /* determinant for cda and cdb for line ab and cd*/	
-    pr3=(vertex[j+1][0]*qyn)-(vertex[j+1][1]*qxn)-(vertex[j][0]*qyn)+(vertex[j][0]*vertex[j+1][1])+(vertex[j][1]*qxn)-(vertex[j][1]*vertex[j+1][0]);
- pr4=(vertex[j+1][0]*tyn)-(vertex[j+1][1]*txn)-(vertex[j][0]*tyn)+(vertex[j][0]*vertex[j+1][1])+(vertex[j][1]*txn)-(vertex[j][1]*vertex[j+1][0]);			
+pr3=(vertex[j][0]*qyn)+(vertex[j+1][0]*vertex[j][1])+(vertex[j+1][1]*qxn)-(vertex[j][0]*vertex[j+1][1])-(vertex[j][1]*qxn)-(vertex[j+1][0]*qyn);
+pr4=(vertex[j][0]*tyn)+(vertex[j+1][0]*vertex[j][1])+(vertex[j+1][1]*txn)-(vertex[j][0]*vertex[j+1][1])-(vertex[j][1]*txn)-(vertex[j+1][0]*tyn);			
+									
 }
+
 else
-{
+{	
 
-		/* determinant with abc and abd for lines ab and cd*/	
-    pr1=(qxn*vertex[j+1][1])-(vertex[0][0]*qyn)-(txn*vertex[0][1])+(txn*qyn)+(tyn*vertex[0][0])-(tyn*qxn);
-    pr2=(qxn*vertex[j][1])-(vertex[j][0]*qyn)-(txn*vertex[j][1])+(txn*qyn)+(tyn*vertex[j][0])-(tyn*qxn);
+			/* determinant with abc and abd for lines ab and cd*/	
+pr1=(qxn*vertex[0][1])+(txn*qyn)+(tyn*vertex[0][0]) -(vertex[0][0]*qyn)-(txn*vertex[0][1])-(tyn*qxn);
+pr2=(qxn*vertex[j][1])+(txn*qyn)+(tyn*vertex[j][0]) -(vertex[j][0]*qyn)-(txn*vertex[j][1])-(tyn*qxn);
 
     /* determinant for cda and cdb for line ab and cd*/	
-    pr3=(vertex[0][0]*qyn)-(vertex[0][1]*qxn)-(vertex[j][0]*qyn)+(vertex[j][0]*vertex[0][1])+(vertex[j][1]*qxn)-(vertex[j][1]*vertex[0][0]);
- pr4=(vertex[0][0]*tyn)-(vertex[0][1]*txn)-(vertex[j][0]*tyn)+(vertex[j][0]*vertex[0][1])+(vertex[j][1]*txn)-(vertex[j][1]*vertex[0][0]);			
+pr3=(vertex[j][0]*qyn)+(vertex[0][0]*vertex[j][1])+(vertex[0][1]*qxn)-(vertex[j][0]*vertex[0][1])-(vertex[j][1]*qxn)-(vertex[0][0]*qyn);
+pr4=(vertex[j][0]*tyn)+(vertex[0][0]*vertex[j][1])+(vertex[0][1]*txn)-(vertex[j][0]*vertex[0][1])-(vertex[j][1]*txn)-(vertex[0][0]*tyn);			
 
 }
 
-if(pr4>-0.1 && pr4<0.1)
-{
-pr4=1.0;
-}
-else if(pr3>-0.1 && pr3<0.1)
-{
-pr3=1.0;
-}
-else if(pr2>-0.1 && pr2<0.1)
-{
-pr2=1.0;
-}
-else if(pr1>-0.1 && pr1<0.1)
-{
-pr1=1.0;
-}
-
-
-ptest1=pr3*pr4;
-ptest2=pr1*pr2;
-
-
-
-				if(ptest1<0.0 && ptest2<0.0)
-				{	
+				if((pr3*pr4)<0 && (pr1*pr2)<0)
+				{
 				//printf("\n there is an edge intersecting this line \n");
-
 				break;
 				}
 
@@ -3212,8 +2978,7 @@ ptest2=pr1*pr2;
 				}
 				else
 				{
-//			printf("\n enter the else if****** \n");
-	XDrawLine(display_ptr, win, gc_dot, qxn*4 , qyn*4 ,txn*4, tyn*4);
+				XDrawLine(display_ptr, win, gc_dot, qxn , qyn ,txn, tyn);
 				int h;
 				int dot;
 				dot=0;
@@ -3226,7 +2991,7 @@ ptest2=pr1*pr2;
 				}
 				else
 				{
-				//dot=0;
+				dot=0;
 				}
 				}
 				if(dot>0)
@@ -3251,8 +3016,8 @@ ptest2=pr1*pr2;
 				fndver[found][7]=dyn;				
 				fndver[found][8]=exn;
 				fndver[found][9]=eyn;	
-				fndver[found][10]=chargx;
-				fndver[found][11]=chargy;			
+				fndver2[found][10]=chargx;
+				fndver2[found][11]=chargy;			
 				found++;
 				}
 				}
@@ -3368,7 +3133,7 @@ int main(int argc, char **argv)
   /* Graphics context to draw dotted lines */
    gc_dot=XCreateGC( display_ptr, win, valuemask, &gc_dot_values);
    XSetForeground( display_ptr, gc_dot, BlackPixel( display_ptr, screen_num ) );
-  XSetLineAttributes( display_ptr, gc_dot, 3, LineOnOffDash, CapProjecting, JoinRound);
+  XSetLineAttributes( display_ptr, gc_dot, 1, LineOnOffDash, CapProjecting, JoinRound);
   /*green*/
 
   
@@ -3415,7 +3180,69 @@ int main(int argc, char **argv)
 	case Expose:
 	{
          
-	Draw(argc,argv);
+	
+
+  //reading from the input file	
+  
+   pf = fopen(argv[1], "r");
+    
+    if(pf==NULL)
+	{	
+      printf("its null");
+ 	}
+    else
+	{
+	rewind(pf);
+	count=0;
+   //iterate through input file and get all the coordinates in an array
+	
+        do
+	{
+	c=fgetc(pf);
+	if(c=='\n')
+	count++;
+
+	}while(c!=EOF);
+
+	rewind(pf);
+	
+	int *ptr_a = &count;
+
+	int a[count][2];
+	printf("\n count is------------%d\n",count);
+
+     for(k=0;k<count;k++)
+       {
+	 fscanf(pf,"%d,%d" ,&a[k][0],&a[k][1]);
+
+	//scaling the inputs.
+
+	a[k][0]=(a[k][0]*4+30);
+	a[k][1]=(a[k][1]*4+30);
+
+    printf("\nfirst set ---%d,%d\n" ,a[k][0],a[k][1]);
+		
+	}
+	
+	printf("\n count is------------%d\n",count);
+	
+	//drawing the polygon
+	for(k=0;k<count-1;k++)
+	{
+	XDrawLine(display_ptr, win, gc,a[k][0],a[k][1],a[k+1][0],a[k+1][1]);
+	}
+	XDrawLine(display_ptr, win, gc,a[k][0],a[k][1],a[0][0],a[0][1]);
+	rewind(pf);
+		
+       }
+	
+	
+	
+	printf("end");
+	fclose(pf);	
+
+	
+
 	
 	}
 	break;
@@ -3425,27 +3252,12 @@ int main(int argc, char **argv)
 	  */
           {  
         
-             double x, y;
-	
+             int x, y;
   	     x = report.xbutton.x;
              y = report.xbutton.y;
-incr=0;
-incr_1=0;
-incr_2=0;
-incr_12=0;
-incr_base=0;
-incr_base1=0;
-incr_base2=0;
-incr01=0;
-incr_last=0;
-incr_ls=0;
-incrsa=0;
-
-		if (report.xbutton.button == Button1 )
+             if (report.xbutton.button == Button1 )
 
 		{
-		XClearWindow(display_ptr, win);
-		Draw(argc,argv);	       
 	        XFillArc( display_ptr, win, gc_red, 
                        x, y,
                        win_height/150, win_height/150, 0, 360*64);
@@ -3482,33 +3294,31 @@ incrsa=0;
 	
 	int *ptr_a = &counter;
 
-	double a[counter][2];
+	int a[counter][2];
      for(k=0;k<counter;k++)
        {
-	 fscanf(pf,"%lf,%lf" ,&a[k][0],&a[k][1]);
+	 fscanf(pf,"%d,%d" ,&a[k][0],&a[k][1]);
 
 	//scaling the inputs.
 
-	a[k][0]=(a[k][0]);
-	a[k][1]=(a[k][1]);
+	a[k][0]=(a[k][0]*4+30);
+	a[k][1]=(a[k][1]*4+30);
 
-    //printf("\n2nd set ---->\n%lf,%lf\n" ,a[k][0],a[k][1]);
+    printf("\n2nd set ---->\n%d,%d\n" ,a[k][0],a[k][1]);
 	
 	}
-	printf("end of reading file");	  
+	printf("end------------------------------------------");	  
 
 
  //Take each vertex of the polygon and iterate them through the loop to find visible vertex from point selected.
 
- printf("starting point x = %lf ,starting point y= %lf" , x, y);
-x=x/4;
-y=y/4;
+ printf("starting point x = %d ,starting point y= %d" , x, y);
 int found=0;
 int i;
 int flag=0;
 int b[counter][2];
 int visit=0;
-//int vis[counter][2];
+int vis[counter][2];
 int f=0;
 for(i=0;i<counter; i++)
 {
@@ -3537,27 +3347,26 @@ for(i=0;i<counter; i++)
      else
      {	
     /* determinant for abc and abd for lines ab and cd*/	
-    or1=(qx*a[0][1])+(x*qy)+(y*a[0][0]) -(a[0][0]*qy)-(x*a[0][1])-(y*qx);
+    or1=(qx*a[ed+1][1])+(x*qy)+(y*a[ed+1][0]) -(a[ed+1][0]*qy)-(x*a[ed+1][1])-(y*qx);
     or2=(qx*a[ed][1])+(x*qy)+(y*a[ed][0]) -(a[ed][0]*qy)-(x*a[ed][1])-(y*qx);
 
     /* determinant for cda and cdb for lines ab and cd*/	
-    or3=(a[ed][0]*qy)+(a[0][0]*a[ed][1])+(a[0][1]*qx)-(a[ed][0]*a[0][1])-(a[ed][1]*qx)-(a[0][0]*qy);
-    or4=(a[ed][0]*y)+(a[0][0]*a[ed][1])+(a[0][1]*x)-(a[ed][0]*a[0][1])-(a[ed][1]*x)-(a[0][0]*y);
+    or3=(a[ed][0]*qy)+(a[ed+1][0]*a[ed][1])+(a[ed+1][1]*qx)-(a[ed][0]*a[ed+1][1])-(a[ed][1]*qx)-(a[ed+1][0]*qy);
+    or4=(a[ed][0]*y)+(a[ed+1][0]*a[ed][1])+(a[ed+1][1]*x)-(a[ed][0]*a[ed+1][1])-(a[ed][1]*x)-(a[ed+1][0]*y);
 	}
   
 
 	if((or3*or4)<0 && (or1*or2)<0)
 	{
 	//printf("\n false \n");
-	//flag=0;
+	flag=0;
 	break;
 	}
 	else if(ed==counter-1)
 	{
-	//printf("\n ***** EDGE VALUE IS ****** %d,%d \n",a[ed][0],a[ed][1]);
-         //XDrawLine(display_ptr, win, gc, qx*4 , qy*4 ,x*4, y*4);
+          //XDrawLine(display_ptr, win, gc, qx , qy ,x, y);
 	  //used to extend the line out of the polygon.
-          
+          double xnew , ynew;
 	  //double ttx,tty;
 
 	  //calculating a value till which the lines will be extended
@@ -3569,13 +3378,12 @@ for(i=0;i<counter; i++)
 	dist=sqrt(dist);
          
 	//find xnew , qnew and ttx,tty
-	ttx=x+(x-qx)/dist*30;
-	tty=y+(y-qy)/dist*30;
+	ttx=x+(x-qx)/dist*300;
+	tty=y+(y-qy)/dist*300;
+
+	xnew=qx+(qx-x)/dist*400;
+	ynew=qy+(qy-y)/dist*400;
 	
-	xnew=qx+(qx-x)/dist*100;
-	ynew=qy+(qy-y)/dist*100;
-	
-	//XDrawLine(display_ptr, win, gc, qx*4 , qy*4 ,xnew*4, ynew*4);
 //to check whether the two points i+1,i-1 lie on same side or opposite side.
 if(i<counter-1)
 {
@@ -3586,10 +3394,10 @@ ey=a[i-1][1];
 }
 else
 {
-edx=a[0][0];
-edy=a[0][1];
-ex=a[i-1][0];
-ey=a[i-1][1];
+edx=a[i+1][0];
+edy=a[i+1][1];
+ex=a[0][0];
+ey=a[0][1];
 
 }
 
@@ -3601,28 +3409,20 @@ eo3=(ex*tty)-(ey*ttx)-(edx*tty)+(edx*ey)+(edy*ttx)-(edy*ex);
 eo4=(ex*ynew)-(ey*xnew)-(edx*ynew)+(edx*ey)+(edy*xnew)-(edy*ex);
 
 
-	if((eo1*eo2)<0)
+		if((eo1*eo2)<0)
 	{
-	
-	break;
 	}
 
 	else
 	{
-	//printf("\n counter %d\n",counter);
-	
-
-   //XDrawLine(display_ptr, win, gc, qx , qy ,xnew, ynew);
 	    for(ed=0;ed<counter;ed++)
 	    {
-	     
 		
 		// first line
 			ax=qx;
 			ay=qy;
 			bx=xnew;
 			by=ynew;
-	//XDrawLine(display_ptr, win, gc_green, ax*4 , ay*4 ,bx*4, by*4);
 		// second line 
 			if(ed<counter-1)
 			{		
@@ -3638,23 +3438,17 @@ eo4=(ex*ynew)-(ey*xnew)-(edx*ynew)+(edx*ey)+(edy*xnew)-(edy*ex);
 			dx=a[0][0];
 			dy=a[0][1];	
 			}
-
 	xr1=(bx*cy)-(cx*by)-(ax*cy)+(ax*by)+(ay*cx)-(ay*bx);
 	xr2=(bx*dy)-(dx*by)-(ax*dy)+(ax*by)+(ay*dx)-(ay*bx);
 
 	xr3=(dx*ay)-(ax*dy)-(cx*ay)+(cx*dy)+(cy*ax)-(cy*dx);
 	xr4=(dx*by)-(bx*dy)-(cx*by)+(cx*dy)+(cy*bx)-(cy*dx);
 
-	
-	test1=xr1*xr2;
-	test2=xr3*xr4;
-	
-		if(test1<0 && test2<0)
+		
+		if( ((xr1*xr2)<0 && (xr3*xr4)<0))
  		{
-		  
-		 // printf("\n Intersection here %lf,%lf__,%lf,%lf,%lf,%lf \n " ,qx,qy,cx,cy,dx,dy); 
-		       
-  //solving the linear equation formed by two lines using CRAMERS RULE and finding the value of variable s
+   		        
+		//solving the linear equation formed by two lines using CRAMERS RULE and finding the value of variable s
 			sa=(bx-ax)*(cy-ay)-(by-ay)*(cx-ax);
 			sb=(bx-ax)*(cy-dy)-(by-ay)*(cx-dx);
 
@@ -3663,79 +3457,49 @@ eo4=(ex*ynew)-(ey*xnew)-(edx*ynew)+(edx*ey)+(edy*xnew)-(edy*ex);
 
 				px=cx+s*(dx-cx);
 				py=cy+s*(dy-cy);
-		//printf("\n px,py %lf,%lf\n",px,py);
 
-			int j;		
+					
 			for(j=0;j<counter;j++)
 			{
 			
-
 if(j<counter-1)									
 {
 		/* determinant with abc and abd for lines ab and cd*/	
-    pr1=(qx*a[j+1][1])-(a[j+1][0]*qy)-(px*a[j+1][1])+(px*qy)+(py*a[j+1][0])-(py*qx);
-    pr2=(qx*a[j][1])-(a[j][0]*qy)-(px*a[j][1])+(px*qy)+(py*a[j][0])-(py*qx);
+    pr1=(qx*a[j+1][1])+(px*qy)+(py*a[j+1][0]) -(a[j+1][0]*qy)-(px*a[j+1][1])-(py*qx);
+    pr2=(qx*a[j][1])+(px*qy)+(py*a[j][0]) -(a[j][0]*qy)-(px*a[j][1])-(py*qx);
 
     /* determinant for cda and cdb for line ab and cd*/	
-    pr3=(a[j+1][0]*qy)-(a[j+1][1]*qx)-(a[j][0]*qy)+(a[j][0]*a[j+1][1])+(a[j][1]*qx)-(a[j][1]*a[j+1][0]);
- pr4=(a[j+1][0]*py)-(a[j+1][1]*px)-(a[j][0]*py)+(a[j][0]*a[j+1][1])+(a[j][1]*px)-(a[j][1]*a[j+1][0]);			
+    pr3=(a[j][0]*qy)+(a[j+1][0]*a[j][1])+(a[j+1][1]*qx)-(a[j][0]*a[j+1][1])-(a[j][1]*qx)-(a[j+1][0]*qy);
+    pr4=(a[j][0]*py)+(a[j+1][0]*a[j][1])+(a[j+1][1]*px)-(a[j][0]*a[j+1][1])-(a[j][1]*px)-(a[j+1][0]*py);			
 }
 else
 {
 
-		/* determinant with abc and abd for lines ab and cd*/	
-    pr1=(qx*a[j+1][1])-(a[0][0]*qy)-(px*a[0][1])+(px*qy)+(py*a[0][0])-(py*qx);
-    pr2=(qx*a[j][1])-(a[j][0]*qy)-(px*a[j][1])+(px*qy)+(py*a[j][0])-(py*qx);
+			/* determinant with abc and abd for lines ab and cd*/	
+    pr1=(qx*a[0][1])+(px*qy)+(py*a[0][0]) -(a[0][0]*qy)-(px*a[0][1])-(py*qx);
+    pr2=(qx*a[j][1])+(px*qy)+(py*a[j][0]) -(a[j][0]*qy)-(px*a[j][1])-(py*qx);
 
     /* determinant for cda and cdb for line ab and cd*/	
-    pr3=(a[0][0]*qy)-(a[0][1]*qx)-(a[j][0]*qy)+(a[j][0]*a[0][1])+(a[j][1]*qx)-(a[j][1]*a[0][0]);
- pr4=(a[0][0]*py)-(a[0][1]*px)-(a[j][0]*py)+(a[j][0]*a[0][1])+(a[j][1]*px)-(a[j][1]*a[0][0]);			
+    pr3=(a[j][0]*qy)+(a[j+1][0]*a[j][1])+(a[j+1][1]*qx)-(a[j][0]*a[j+1][1])-(a[j][1]*qx)-(a[j+1][0]*qy);
+    pr4=(a[j][0]*py)+(a[j+1][0]*a[j][1])+(a[j+1][1]*px)-(a[j][0]*a[j+1][1])-(a[j][1]*px)-(a[j+1][0]*py);			
 
 }
 
 
-if(pr4>-0.1 && pr4<0.1)
-{
-pr4=-1.0;
-}
-else if(pr3>-0.1 && pr3<0.1)
-{
-pr3=-1.0;
-}
-else if(pr2>-0.1 && pr2<0.1)
-{
-pr2=-1.0;
-}
-else if(pr1>-0.1 && pr1<0.1)
-{
-pr1=-1.0;
-}
 
-
-
-ptest1=pr3*pr4;
-ptest2=pr1*pr2;
-
-
-
-
-
-
-
-				if((ptest1<0.0) && (ptest2<0.0))
+				if((pr3*pr4)<0 && (pr1*pr2)<0)
 				{
-									
-
-
-				break;		
+								
+				break;
 				}
 				else if(j==counter-1)
 				{
-	    XDrawLine(display_ptr, win, gc_dot, (qx*4) , (qy*4) ,(px*4), (py*4));
+					
+				XDrawLine(display_ptr, win, gc_dot, qx , qy ,px, py);
    find_visiblity(a,counter,qx,qy,px,py,cx,cy,dx,dy,edx,edy,ex,ey,ed,x,y);				
 				
 				
-				
+				break;
 				}	
 			}
 
